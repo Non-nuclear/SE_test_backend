@@ -10,7 +10,6 @@ from OnlineExam.tools import *
 import json
 
 class Chapter(models.Model):
-    id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=255)
 
 class Question(models.Model):
@@ -85,7 +84,6 @@ class Exam(models.Model):
 
 
 class ExamParticipation(models.Model):
-    id = models.IntegerField(primary_key=True)
     userid = models.IntegerField(db_column='userId')  # Field name made lowercase.
     starttime = models.DateTimeField(db_column='startTime', blank=True, null=True)  # Field name made lowercase.
     endtime = models.DateTimeField(db_column='endTime', blank=True, null=True)  # Field name made lowercase.
@@ -104,6 +102,6 @@ class ExamParticipation(models.Model):
 
 
 class QuestionGroup(models.Model):
-    id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=255)
     questions = models.ManyToManyField(Question)
+    

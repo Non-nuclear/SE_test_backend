@@ -69,6 +69,66 @@ def updateQuestion(request, questionid):
 def deleteQuestion(request, questionid):
     models.Question.objects.filter(id=questionid).delete()
     return HttpResponse("OK")
+    
+
+#/question/group/list/ GET
+def getQuestionGroupList(request):
+    qgset = models.QuestionGroup.objects.all()
+    qglist = []
+    for qg in qgset:
+        data = {
+            'id' : qg.id,
+            'name': qg.name
+        }
+        qglist.append(data)
+    j = json.dumps(qglist, cls=DjangoJSONEncoder)
+    return HttpResponse(j)
+
+#/question/group/{question-group-id}/ GET
+def getQuestionGroup(request, questiongroupid):
+    qg = models.QuestionGroup.objects.get(id=questiongroupid)
+    qgd = []
+    data = {
+        'id' : qg.id, 
+        'name' : qg.name
+    }
+    qgd.append(data)
+    qset = qg.questions.all()
+    for q in qset:
+        data = {
+            "id" : q.id,
+            "type" : q.type,
+            "description" : q.description,
+            "author" : q.author
+        }
+        qgd.append(data)
+    j = json.dumps(qgd, cls=DjangoJSONEncoder)
+    return JsonResponse(data)
+
+#/question/group/create/ POST
+def createQuestionGroup(request):
+    if request.method == 'POST':
+        req = json.loads(request.body.decode())
+        qg = models.QuestionGroup(
+            name = req['name']
+        )
+        qg.save()
+        return HttpResponse(qg.id)
+
+#/question/group/{question-group-id}/update/ POST
+def updateQuestionGroup(request, questiongroupid):
+    if request.method == 'POST':
+        req = json.loads(request.body.decode())
+        qg = models.QuestionGroup.objects.get(id=questiongroupid)
+        qg.name = req['name']
+        qg.save()
+        return HttpResponse("OK")
+
+#/question/group/{question-group-id}/delete/ GET
+def deleteQuestionGroup(request, questiongroupid):
+    models.QuestionGroup.objects.filter(id=questiongroupid).delete()
+    return HttpResponse("OK")
+###########################
 
 #/exam/{exam-id}/ GET
 # require teacher permission
