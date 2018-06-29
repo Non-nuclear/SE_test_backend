@@ -15,6 +15,7 @@ urlpatterns =[
     path('question/group/<int:questiongroupid>/update/', views.updateQuestionGroup),
     path('question/group/<int:questiongroupid>/delete/', views.deleteQuestionGroup),
 
+	path('exam/list/', views.getExamList),
     path('exam/<int:exam_id>/', views.getExam),
     path('exam/create/', views.createExam),
     path('exam/<int:exam_id>/update/', views.updateExam),

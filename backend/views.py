@@ -130,6 +130,15 @@ def deleteQuestionGroup(request, questiongroupid):
     return HttpResponse("OK")
 ###########################
 
+#/exam/list/ GET
+def getExamList(request):
+	exset = models.Exam.objects.all()
+	exlist = []
+	for ex in exset:
+		data = models.Exam.as_dict_entry()
+		exlist.append(data)
+	return JsonResponse(exlist)
+
 #/exam/{exam-id}/ GET
 # require teacher permission
 @require_GET
