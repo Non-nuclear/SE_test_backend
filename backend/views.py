@@ -24,8 +24,7 @@ def getQuestionList(request):
             'author' : q.author
         }
         qlist.append(data)
-    j = json.dumps(qlist, cls=DjangoJSONEncoder)
-    return HttpResponse(j)
+    return JsonResponse(qlist, safe=False)
 
 #/question/{question-id}/ GET
 def getQuestion(request, questionid):
@@ -81,8 +80,7 @@ def getQuestionGroupList(request):
             'name': qg.name
         }
         qglist.append(data)
-    j = json.dumps(qglist, cls=DjangoJSONEncoder)
-    return HttpResponse(j)
+    return JsonResponse(qglist, safe=False)
 
 #/question/group/{question-group-id}/ GET
 def getQuestionGroup(request, questiongroupid):
@@ -132,12 +130,12 @@ def deleteQuestionGroup(request, questiongroupid):
 
 #/exam/list/ GET
 def getExamList(request):
-	exset = models.Exam.objects.all()
-	exlist = []
-	for ex in exset:
-		data = models.Exam.as_dict_entry()
-		exlist.append(data)
-	return JsonResponse(exlist)
+    exset = models.Exam.objects.all()
+    exlist = []
+    for ex in exset:
+        data = models.Exam.as_dict_entry()
+        exlist.append(data)
+    return JsonResponse(exlist, safe=False)
 
 #/exam/{exam-id}/ GET
 # require teacher permission
