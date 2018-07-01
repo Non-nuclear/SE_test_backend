@@ -5,6 +5,7 @@ from django.core import serializers
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_POST 
 from . import models
+from .models import Question,QuestionGroup
 from OnlineExam.tools import *
 import json
 from django.core.serializers.json import DjangoJSONEncoder
@@ -67,7 +68,8 @@ def createQuestion(request):
         m = models.Question(
             type = req['type'],
             description = req['description'],
-            solution = req['solution']
+            solution = req['solution'],
+            author = user['name']
             )
         m.set_options(req['options'])
         m.set_keypoints(req['keypoints'])
@@ -128,6 +130,9 @@ def createQuestionGroup(request):
             name = req['name']
         )
         qg.save()
+        for id in req['questionIds']:
+            question = Question.objects.get(id=id)
+            qg.questions.add(question)
         return HttpResponse(qg.id)
 
 #/question/group/{question-group-id}/update/ POST
@@ -150,7 +155,7 @@ def getExamList(request):
     exset = models.Exam.objects.all()
     exlist = []
     for ex in exset:
-        data = models.Exam.as_dict_entry()
+        data = ex.as_dict_entry()
         exlist.append(data)
     return JsonResponse(exlist, safe=False)
 
@@ -182,7 +187,7 @@ def createExam(request):
         displayendtime=js_timestamp_to_datetime(req['displayEndTime']),
         availablestarttime=js_timestamp_to_datetime(req['availableStartTime']),
         availableendtime=js_timestamp_to_datetime(req['availableEndTime']),
-        course=req['course'],
+        # course=req['course'],
     )
     newExam.save()
     # We may assume that all questions in QuestionDetail exists

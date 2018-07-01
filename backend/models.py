@@ -19,7 +19,7 @@ class Question(models.Model):
     description = models.CharField(max_length=255, blank=True)
     options = models.TextField(blank=True)
     solution = models.CharField(max_length=20, blank=True)
-    author = models.IntegerField(blank=True, null=True)
+    author = models.CharField(max_length=100)
     keypoints = models.TextField(blank=True)
     def set_options(self, x):
         if not x is None:
@@ -41,10 +41,12 @@ class Question(models.Model):
         d['type'] = self.type
         d['description'] = self.description
         d['author'] = self.author
+        return d
     def as_dict_detail(self):
         d = self.as_dict_entry()
         d['solution'] = self.solution
         d['keypoints'] = self.keypoints
+        return d
 
 class Exam(models.Model):
     name = models.CharField(max_length=255)
@@ -52,10 +54,9 @@ class Exam(models.Model):
     displaystarttime = models.DateTimeField(db_column='displayStartTime', blank=True, null=True)  # Field name made lowercase.
     displayendtime = models.DateTimeField(db_column='displayEndTime', blank=True, null=True)  # Field name made lowercase.
     availablestarttime = models.DateTimeField(db_column='availableStartTime', blank=True, null=True)  # Field name made lowercase.
-    avaliableendtime = models.DateTimeField(db_column='avaliableEndTime', blank=True, null=True)  # Field name made lowercase.
+    availableendtime = models.DateTimeField(db_column='avaliableEndTime', blank=True, null=True)  # Field name made lowercase.
     createat = models.DateTimeField(db_column='createAt', blank=True, null=True)  # Field name made lowercase.
-    courseid = models.IntegerField(db_column='courseId', blank=True, null=True)  # Field name made lowercase.
-    chapters = models.ManyToManyField(Chapter)
+    # courseid = models.IntegerField(db_column='courseId', blank=True, null=True)  # Field name made lowercase.
     questions = models.ManyToManyField(Question)
     def as_dict_entry(self):
         d = dict()
@@ -68,13 +69,14 @@ class Exam(models.Model):
         d['availableStartTime'] = datetime_to_js_timestamp(self.availablestarttime)
         d['availableEndTime'] = datetime_to_js_timestamp(self.availableendtime)
         d['creatAt'] = datetime_to_js_timestamp(self.createat)
-        d['course'] = self.courseid
+        # d['course'] = self.courseid
         return d
 
     def as_dict_paper(self):
         d['questions'] = []
         for question in self.questions.all():
             d['questions'].append(question.as_dict_detail())
+        return d
 
     def as_dict_detail(self):
         d = self.as_dict_paper()
