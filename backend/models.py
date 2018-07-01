@@ -9,13 +9,15 @@ from django.db import models
 from OnlineExam.tools import *
 import json
 
+
+
 class Chapter(models.Model):
     name = models.CharField(max_length=255)
 
 class Question(models.Model):
     type = models.CharField(max_length=20)
     description = models.CharField(max_length=255, blank=True)
-    options = models.TextField(max_length=255, blank=True)
+    options = models.TextField(blank=True)
     solution = models.CharField(max_length=20, blank=True)
     author = models.IntegerField(blank=True, null=True)
     keypoints = models.TextField(blank=True)

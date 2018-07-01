@@ -8,6 +8,26 @@ from . import models
 from OnlineExam.tools import *
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+
+user = {
+    'id' : '0',
+    'name' : 'test',
+    'type' : 'student'
+}
+
+###account
+def getUser(request):
+    return JsonResponse(user)
+
+def fake_login(request):
+    req = json.loads(request.body.decode())
+    if request.method == 'POST':
+        global user
+        user = req
+        return HttpResponse("OK")
+        
+        
+
 # Create your views here.
 def UnexpectedErrorResponse():
     return HttpResponse("Unexpected Error!", status=500)

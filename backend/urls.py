@@ -3,6 +3,9 @@ from . import views
 
 app_name = "backend"
 urlpatterns =[
+    path('account/profile/', views.getUser),
+    path('account/fake-login/', views.fake_login),
+
     path('question/<int:questionid>/', views.getQuestion),
     path('question/create/', views.createQuestion),
     path('question/list/', views.getQuestionList),
