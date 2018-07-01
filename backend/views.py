@@ -30,7 +30,11 @@ def getQuestionList(request):
 def getQuestion(request, questionid):
     q = models.Question.objects.get(id=questionid)
     data = {
-        'options' : q.get_options(), 
+        'id' : q.id,
+        'type': q.type,
+        'description' : q.description,
+        'author' : q.author,
+        'options' : q.get_options(),
         'solution' : q.solution, 
         'keypoints' : q.get_keypoints()
     }
