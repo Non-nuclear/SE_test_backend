@@ -64,11 +64,11 @@ class Exam(models.Model):
         d['name'] = self.name
         d['description'] = self.description
         # handle enum type manually
-        d['displayStartTime'] = self.displaystarttime.timestamp()
-        d['displayEndTime'] = self.displayendtime.timestamp()
-        d['availableStartTime'] = self.availablestarttime.timestamp()
-        d['availableEndTime'] = self.availableendtime.timestamp()
-        d['creatAt'] = self.createat.timestamp()
+        d['displayStartTime'] = self.displaystarttime.timestamp()*1000
+        d['displayEndTime'] = self.displayendtime.timestamp()*1000
+        d['availableStartTime'] = self.availablestarttime.timestamp()*1000
+        d['availableEndTime'] = self.availableendtime.timestamp()*1000
+        d['creatAt'] = self.createat.timestamp()*1000
         # d['course'] = self.courseid
         return d
 
@@ -76,16 +76,20 @@ class Exam(models.Model):
         d = self.as_dict_entry()
         d['questions'] = []
         for question in self.questions.all():
-            t = question.as_dict_detail()
+            t = question.as_dict_entry()
             t['options'] = question.get_options()
             d['questions'].append(t)
         return d
 
     def as_dict_detail(self):
-        d = self.as_dict_paper()
-        d['participation'] = []
-        for participation in self.examparticipation_set.all():
-            d['participation'].append(participation.as_dict())
+        d = self.as_dict_entry()
+        d['questions'] = []
+        for question in self.questions.all():
+            t = question.as_dict_detail()
+            d['questions'].append(t)
+        # d['participation'] = []
+        # for participation in self.examparticipation_set.all():
+            # d['participation'].append(participation.as_dict())
         return d
 
 
@@ -94,18 +98,18 @@ class ExamParticipation(models.Model):
     userid = models.IntegerField(db_column='userId')  # Field name made lowercase.
     starttime = models.DateTimeField(db_column='startTime', blank=True, null=True)  # Field name made lowercase.
     endtime = models.DateTimeField(db_column='endTime', blank=True, null=True)  # Field name made lowercase.
-    score = models.FloatField(blank=True, null=True)
-    exam = models.ForeignKey(Exam, models.CASCADE)  # Field name made lowercase.
+    score = models.IntegerField(blank=True, null=True)
+    exam = models.ForeignKey(Exam, models.CASCADE, related_name='participations')  # Field name made lowercase.
     answer = models.TextField(blank=True, null=True)  # This field type is a guess.
     def as_dict(self):
         d = dict()
         d['id'] = self.id
         d['user'] = self.userid
-        d['startTime'] = datetime_to_js_timestamp(self.starttime)
-        d['endTime'] = datetime_to_js_timestamp(self.endtime)
+        d['startTime'] = self.starttime.timestamp()*1000
+        d['endTime'] = self.endtime.timestamp()*1000
         d['score'] = self.score
-        d['exame'] = self.examid
-        d['answer'] = self.answer
+        d['answer'] = json.loads(self.answer)
+        return d
 
 
 class QuestionGroup(models.Model):

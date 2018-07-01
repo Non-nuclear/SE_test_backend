@@ -155,7 +155,10 @@ def getExamList(request):
     exset = models.Exam.objects.all()
     exlist = []
     for ex in exset:
-        data = ex.as_dict_entry()
+        data = ex.as_dict_detail()
+        data['participated'] = ex.participations.filter(userid=user['id']).exists()
+        if data['participated'] and ex.endtime is not None:
+            data['score'] = ex.participations.filter(userid=user['id'])[0].score
         exlist.append(data)
     return JsonResponse(exlist, safe=False)
 
@@ -253,7 +256,7 @@ def participateExam(request, exam_id):
         participation = models.ExamParticipation(
             userid=userid,
             starttime=startTime,
-            endtime=exam.availableendtime,
+            endtime=None,
             score=None,
             exam=exam,
             answer="",
@@ -269,26 +272,38 @@ def submitExam(request, exam_id):
     try:
         exam = models.Exam.objects.get(pk=exam_id)
     except (KeyError, models.Exam.DoesNotExist):
-        return HttpResponse("The required exam does not exist.", status=444)
+        return HttpResponse("The required exam does not exist.")
     except:
         return UnexpectedErrorResponse()
-    else:
-        if submitTime > exam.availableendtime or submitTime < exam.availablestarttime:
-            return HttpResponse("The exam is not available now.", status=444) 
-        else:
-            # Need to acquire the userid
-            userid = 1
-            try:
-                participation = models.ExamParticipation.get(userid=userid)
-            except (KeyError, models.ExamParticipation.DoesNotExist):
-                return HttpResponse("The user did not participate this exam.", status=444)
-            except:
-                return UnexpectedErrorResponse()
-            else:
-                answer = ""
-                for s in req:
-                    answer += s
-                    answer += " \n"
-                participation.answer = answer
-                participation.save()
-                return JsonResponse("OK")
+    if submitTime > exam.availableendtime or submitTime < exam.availablestarttime:
+        return HttpResponse("The exam is not available now.") 
+    userid = user['id']
+    try:
+        participation = exam.participations.get(userid=userid)
+    except (KeyError, models.ExamParticipation.DoesNotExist):
+        return HttpResponse("The user did not participate this exam.")
+    except:
+        return UnexpectedErrorResponse()
+    participation.answer = json.dumps(req)
+    endtime.endtime = timezone.now()
+    score = 0
+    count = 0
+    questions = exam.questions.all()
+    for choice in req:
+        if questions[count].solution == choice:
+            score+=1
+        count+=1
+    participation.score = score
+    participation.save()
+    return HttpResponse("success")
+
+
+@require_GET
+def examResult(request, exam_id):
+    exam = models.Exam.objects.get(id=exam_id)
+    res = []
+    for p in exam.participations.all():
+        if p.endtime is not None:
+            res.append(p.as_dict())
+    return JsonResponse(res, safe=False)
+
