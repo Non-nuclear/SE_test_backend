@@ -191,10 +191,9 @@ def createExam(request):
     )
     newExam.save()
     # We may assume that all questions in QuestionDetail exists
-    for question in req['QuestionDetail']:
-        id = int(question['id'])
+    for id in req['questionIds']:
         newExam.questions.add(models.Question.objects.get(id=id))
-    return JsonResponse("OK")
+    return HttpResponse()
 
 #/exam/{exam-id}/update POST
 # require teacher permission
@@ -218,15 +217,10 @@ def updateExam(request, exam_id):
         exam.availableendtime = req['availableEndTime']
         exam.course = req['course']
         exam.save()
-        for question in exam.questions.all():
-            for q in req['QuestionDetail']:
-                if question.id == int(q['id']):
-                    exam.questions.remove(id=question.id)
-                    break
-        for question in req['QuestionDetail']:
-            id = int(question['id'])
+        exam.questions.clear()
+        for id in req['questionIds']:
             exam.questions.add(models.Question.objects.get(id=id))
-        return JsonResponse("OK")
+        return HttpResponse()
 
 #/exam/{exam-id}/delete GET
 # require teacher permission
@@ -239,8 +233,8 @@ def deleteExam(request, exam_id):
     except:
         return UnexpectedErrorResponse()
     else:
-        exam.delte()
-        return JsonResponse("OK")
+        exam.delete()
+        return HttpResponse()
 
 #/exam/{exam-id}/participate GET
 @require_GET
@@ -248,23 +242,24 @@ def participateExam(request, exam_id):
     try:
         exam = models.Exam.objects.get(pk=exam_id)
     except (KeyError, models.Exam.DoesNotExist):
-        return HttpResponse("The required exam does not exist.", status=444)
-    except:
         return UnexpectedErrorResponse()
-    else:
-        # Need to acquire the userid
-        userid = 1
-        startTime = timezone.now()
+        # return HttpResponse("The required exam does not exist.", status=444)
+    # except:
+        # return UnexpectedErrorResponse()
+    # Need to acquire the userid
+    userid = user['id']
+    startTime = timezone.now()
+    if not models.ExamParticipation.objects.filter(userid=userid,exam=exam).exists():
         participation = models.ExamParticipation(
             userid=userid,
             starttime=startTime,
-            endtime=exam.availableendtime, 
+            endtime=exam.availableendtime,
             score=None,
-            examid=exam_id,
+            exam=exam,
             answer="",
-        ) 
+        )
         participation.save()
-        return exam.as_dict_paper()
+    return JsonResponse(exam.as_dict_paper())
 
 #/exam/{exam-id}/submit/ POST
 @require_POST

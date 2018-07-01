@@ -55,7 +55,7 @@ class Exam(models.Model):
     displayendtime = models.DateTimeField(db_column='displayEndTime', blank=True, null=True)  # Field name made lowercase.
     availablestarttime = models.DateTimeField(db_column='availableStartTime', blank=True, null=True)  # Field name made lowercase.
     availableendtime = models.DateTimeField(db_column='avaliableEndTime', blank=True, null=True)  # Field name made lowercase.
-    createat = models.DateTimeField(db_column='createAt', blank=True, null=True)  # Field name made lowercase.
+    createat = models.DateTimeField(auto_now_add=True)  # Field name made lowercase.
     # courseid = models.IntegerField(db_column='courseId', blank=True, null=True)  # Field name made lowercase.
     questions = models.ManyToManyField(Question)
     def as_dict_entry(self):
@@ -64,18 +64,21 @@ class Exam(models.Model):
         d['name'] = self.name
         d['description'] = self.description
         # handle enum type manually
-        d['displayStartTime'] = datetime_to_js_timestamp(self.displaystarttime)
-        d['displayEndTime'] = datetime_to_js_timestamp(self.displayendtime)
-        d['availableStartTime'] = datetime_to_js_timestamp(self.availablestarttime)
-        d['availableEndTime'] = datetime_to_js_timestamp(self.availableendtime)
-        d['creatAt'] = datetime_to_js_timestamp(self.createat)
+        d['displayStartTime'] = self.displaystarttime.timestamp()
+        d['displayEndTime'] = self.displayendtime.timestamp()
+        d['availableStartTime'] = self.availablestarttime.timestamp()
+        d['availableEndTime'] = self.availableendtime.timestamp()
+        d['creatAt'] = self.createat.timestamp()
         # d['course'] = self.courseid
         return d
 
     def as_dict_paper(self):
+        d = self.as_dict_entry()
         d['questions'] = []
         for question in self.questions.all():
-            d['questions'].append(question.as_dict_detail())
+            t = question.as_dict_detail()
+            t['options'] = question.get_options()
+            d['questions'].append(t)
         return d
 
     def as_dict_detail(self):
@@ -92,7 +95,7 @@ class ExamParticipation(models.Model):
     starttime = models.DateTimeField(db_column='startTime', blank=True, null=True)  # Field name made lowercase.
     endtime = models.DateTimeField(db_column='endTime', blank=True, null=True)  # Field name made lowercase.
     score = models.FloatField(blank=True, null=True)
-    examid = models.ForeignKey(Exam, models.DO_NOTHING, db_column='examId')  # Field name made lowercase.
+    exam = models.ForeignKey(Exam, models.CASCADE)  # Field name made lowercase.
     answer = models.TextField(blank=True, null=True)  # This field type is a guess.
     def as_dict(self):
         d = dict()
