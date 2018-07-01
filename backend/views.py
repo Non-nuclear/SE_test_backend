@@ -185,10 +185,10 @@ def createExam(request):
     newExam = models.Exam(
         name=req['name'],
         description=req['description'],
-        displaystarttime=js_timestamp_to_datetime(req['displayStartTime']),
-        displayendtime=js_timestamp_to_datetime(req['displayEndTime']),
-        availablestarttime=js_timestamp_to_datetime(req['availableStartTime']),
-        availableendtime=js_timestamp_to_datetime(req['availableEndTime']),
+        displaystarttime=req['displayStartTime'],
+        displayendtime=req['displayEndTime'],
+        availablestarttime=req['availableStartTime'],
+        availableendtime=req['availableEndTime'],
         course=req['course'],
     )
     newExam.save()
