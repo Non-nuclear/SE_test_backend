@@ -109,22 +109,15 @@ def getQuestionGroupList(request):
 #/question/group/{question-group-id}/ GET
 def getQuestionGroup(request, questiongroupid):
     qg = models.QuestionGroup.objects.get(id=questiongroupid)
-    qgd = []
+    questions = []
     data = {
         'id' : qg.id, 
         'name' : qg.name
     }
-    qgd.append(data)
-    qset = qg.questions.all()
-    for q in qset:
-        data = {
-            "id" : q.id,
-            "type" : q.type,
-            "description" : q.description,
-            "author" : q.author
-        }
-        qgd.append(data)
-    j = json.dumps(qgd, cls=DjangoJSONEncoder)
+    for q in qg.questions.all():
+        questions.append(q.as_dict_entry())
+    # j = json.dumps(qgd, cls=DjangoJSONEncoder)
+    data['questions'] = questions
     return JsonResponse(data)
 
 #/question/group/create/ POST
