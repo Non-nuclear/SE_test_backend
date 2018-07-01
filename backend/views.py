@@ -157,8 +157,12 @@ def getExamList(request):
     for ex in exset:
         data = ex.as_dict_detail()
         data['participated'] = ex.participations.filter(userid=user['id']).exists()
-        if data['participated'] and ex.endtime is not None:
-            data['score'] = ex.participations.filter(userid=user['id'])[0].score
+        if data['participated']:
+            p = ex.participations.filter(userid=user['id'])[0]
+            if p.endtime is not None:
+                data['score'] = p.score
+            else:
+                data['score'] = '进行中'
         exlist.append(data)
     return JsonResponse(exlist, safe=False)
 
@@ -270,7 +274,7 @@ def submitExam(request, exam_id):
     submitTime = timezone.now()
     req = json.loads(request.body.decode())
     try:
-        exam = models.Exam.objects.get(pk=exam_id)
+        exam = models.Exam.objects.get(id=exam_id)
     except (KeyError, models.Exam.DoesNotExist):
         return HttpResponse("The required exam does not exist.")
     except:
@@ -285,7 +289,7 @@ def submitExam(request, exam_id):
     except:
         return UnexpectedErrorResponse()
     participation.answer = json.dumps(req)
-    endtime.endtime = timezone.now()
+    participation.endtime = submitTime
     score = 0
     count = 0
     questions = exam.questions.all()

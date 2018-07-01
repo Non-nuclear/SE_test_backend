@@ -19,13 +19,13 @@ urlpatterns =[
     path('question/group/<int:questiongroupid>/delete/', views.deleteQuestionGroup),
 
     path('exam/list/', views.getExamList),
-    path('exam/<int:exam_id>/', views.getExam),
     path('exam/create/', views.createExam),
     path('exam/<int:exam_id>/update/', views.updateExam),
     path('exam/<int:exam_id>/result/', views.examResult),
     path('exam/<int:exam_id>/delete/', views.deleteExam),
     path('exam/<int:exam_id>/participate/', views.participateExam),
     path('exam/<int:exam_id>/submit/', views.submitExam),
+    path('exam/<int:exam_id>/', views.getExam),
 ]
 
 
